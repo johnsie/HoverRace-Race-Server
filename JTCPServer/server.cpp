@@ -72,7 +72,7 @@ public:
 #pragma comment (lib, "ws2_32.lib")
 
 
-
+void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel);
 
 
 using namespace std;
@@ -225,12 +225,35 @@ void main()
 				
 				
 				cout << mInputMessageBuffer.mMessageType << endl;
+				CentralisedNetMessageBuffer lAnswer;
+std::string mPlayer ="Central Server";
 
-
+std::string lConnectionName ((const char*)(mInputMessageBuffer.mData + 4), mInputMessageBuffer.mDataLen - 4);
 				switch (mInputMessageBuffer.mMessageType)
 				{
 
+				case 47:
+
+					//it was requesting a lag test
+
+
+					//let's force start the race lol
+
+					lAnswer.mMessageType = MRNM_READY;
+					lAnswer.mDataLen = 1;
+
+					//Need to have a player counter and the new player should have the id based on that
+					lAnswer.mData[0] = 0 + 1;
+
+					SendData(&lAnswer, MR_NET_REQUIRED);
+
+
+					break;
+
+
 				case 43:
+
+					
 					//Client has sent their name
 
 					//In HoverRace when this message is recieved it add the new user to the list of players in the race
@@ -242,44 +265,56 @@ void main()
 
 
 				//	LV_ITEM lItem;
-					std::string lConnectionName((const char*)(mInputMessageBuffer.mData + 4), mInputMessageBuffer.mDataLen - 4);
 
-					mActiveInterface->mClient[lClient].SetRemoteUDPPort(*(unsigned int*)(mInputMessageBuffer.mData));
-					mActiveInterface->mClientName[lClient] = lConnectionName;
+				CentralisedNetMessageBuffer lAnswer;
+	//	 lConnectionName=((const char*)(mInputMessageBuffer.mData + 4), mInputMessageBuffer.mDataLen - 4);
+				 cout << "Player name is" << lConnectionName.c_str() << endl;
+					
+			
+				 
+				 //I think this is where we should add the player to the list of players
+					
 
-					lItem.mask = LVIF_TEXT;
-					lItem.iItem = lClient + 1;
-					lItem.iSubItem = 0;
-					lItem.pszText = const_cast<char*>(lConnectionName.c_str());
+					//We're not using udp so ignore this
+					//mActiveInterface->mClient[lClient].SetRemoteUDPPort(*(unsigned int*)(mInputMessageBuffer.mData));
+					//mActiveInterface->mClientName[lClient] = lConnectionName;
+                    
+					//more listview stuff that we don't need in a server
+				//	lItem.mask = LVIF_TEXT;
+				//	lItem.iItem = lClient + 1;
+				//	lItem.iSubItem = 0;
+				//	lItem.pszText = const_cast<char*>(lConnectionName.c_str());
 
-					if (ListView_GetItemCount(lListHandle) > lItem.iItem) {
-						ListView_SetItem(lListHandle, &lItem);
-					}
-					else {
-						ListView_InsertItem(lListHandle, &lItem);
-					}
-					SetListViewText(lListHandle, lClient + 1, 1, _("Computing lag"));
-					SetListViewText(lListHandle, lClient + 1, 2, _("Connecting"));
+				//	if (ListView_GetItemCount(lListHandle) > lItem.iItem) {
+				//		ListView_SetItem(lListHandle, &lItem);
+				//	}
+				//	else {
+				///		ListView_InsertItem(lListHandle, &lItem);
+				//	}
+				//	SetListViewText(lListHandle, lClient + 1, 1, _("Computing lag"));
+				//	SetListViewText(lListHandle, lClient + 1, 2, _("Connecting"));
 
 					// return local name as an answer
 					// also include UDP port number in the request
 
 
 					//let's just send out dUMMu data... WE're not going to get everyone to open a UDP port
-
+						
 					lAnswer.mMessageType = MRNM_CONN_NAME_SET;
-					lAnswer.mDataLen = mActiveInterface->mPlayer.length() + 4;
-					*(unsigned int*)(lAnswer.mData) = htons(mActiveInterface->mUDPRecvPort);
-					memcpy(lAnswer.mData + 4, mActiveInterface->mPlayer.c_str(), lAnswer.mDataLen - 4);
+					lAnswer.mDataLen = mPlayer.length() + 4;
+					*(unsigned int*)(lAnswer.mData) = htons(1690);
+					memcpy(lAnswer.mData + 4, mPlayer.c_str(), lAnswer.mDataLen - 4);
 
-					mActiveInterface->mClient[lClient].Send(&lAnswer, MR_NET_REQUIRED);
+				SendData(&lAnswer, MR_NET_REQUIRED);
 
 					// Tell client their ID and send client list if server
-					if (mActiveInterface->mServerMode) {
+				
 						// send player ID
 						lAnswer.mMessageType = MRNM_SET_PLAYER_ID;
 						lAnswer.mDataLen = 1;
-						lAnswer.mData[0] = lClient + 1;
+
+						//Need to have a player counter and the new player should have the id based on that
+						lAnswer.mData[0] = 0 + 1;
 
 						SendData(&lAnswer, MR_NET_REQUIRED);
 
@@ -289,26 +324,28 @@ void main()
 						lAnswer.mDataLen = 12;
 
 						// Send the actual client list
-						for (int lCounter = 0; lCounter < eMaxClient; lCounter++) {
-							if ((lCounter != lClient)
-								&& (mActiveInterface->mClient[lCounter].IsConnected())
-								&& (mActiveInterface->mCanBePreLogued[lCounter])) {
-								*(int*)&(lAnswer.mData[0]) = mActiveInterface->mClientAddr[lCounter];
-								*(int*)&(lAnswer.mData[4]) = mActiveInterface->mClientBkAddr[lCounter];
-								*(int*)&(lAnswer.mData[8]) = mActiveInterface->mClientPort[lCounter];
 
-								mActiveInterface->mClient[lClient].Send(&lAnswer, MR_NET_REQUIRED);
+						/*
+						for (int lCounter = 0; lCounter < 9; lCounter++) {
+							if ((lCounter != 100)
+								//&& (mActiveInterface->mClient[lCounter].IsConnected())
+								//&& (mActiveInterface->mCanBePreLogued[lCounter])) {
+						//		*(int*)&(lAnswer.mData[0]) = mActiveInterface->mClientAddr[lCounter];
+							//	*(int*)&(lAnswer.mData[4]) = mActiveInterface->mClientBkAddr[lCounter];
+						//		*(int*)&(lAnswer.mData[8]) = mActiveInterface->mClientPort[lCounter];
 
-							}
-						}
+							//	SendData(&lAnswer, MR_NET_REQUIRED);
+
+							}*/
+					
 						lAnswer.mDataLen = 0;
-						mActiveInterface->mClient[lClient].Send(&lAnswer, MR_NET_REQUIRED);
+						SendData(&lAnswer, MR_NET_REQUIRED);
 
-						mActiveInterface->mCanBePreLogued[lClient] = TRUE;
-					}
+						//mActiveInterface->mCanBePreLogued[lClient] = TRUE;
+				
 
 			
-
+		
 
 
 					break;
@@ -318,7 +355,7 @@ void main()
 					cout <<  "User sent MRNM_GET_GAME_NAME" << endl;
 
 					//so now we need to send them the game name
-					CentralisedNetMessageBuffer lAnswer;
+				
 				mGameName ="SteepleChase";			/// just the track name
 
 
@@ -335,102 +372,11 @@ void main()
 
 #define MR_NET_HEADER_LEN  (sizeof(CentralisedNetMessageBuffer) - MR_MAX_NET_MESSAGE_LEN)
 					// First try to send buffered data
-					if (sock != INVALID_SOCKET) {
-						BOOL lEndQueueLoop = (mOutQueueLen == 0);
 
-						while (!lEndQueueLoop) {
-							// Determine first batch to send
-							int lToSend;
 
-							if ((mOutQueueHead + mOutQueueLen) > MR_OUT_QUEUE_LEN) {
-								lToSend = MR_OUT_QUEUE_LEN - mOutQueueHead;
-							}
-							else {
-								lToSend = mOutQueueLen;
-								lEndQueueLoop = TRUE;
-							}
+					SendData(&lAnswer, MR_NET_REQUIRED);
 
-							int lReturnValue = send(sock, (const char*)(mOutQueue + mOutQueueHead), lToSend, 0);
-
-							if (lReturnValue >= 0) {
-								mOutQueueLen -= lReturnValue;
-
-								mOutQueueHead = (mOutQueueHead + lReturnValue) % MR_OUT_QUEUE_LEN;
-
-								if (lReturnValue != lToSend) {
-									lEndQueueLoop = TRUE;
-								}
-							}
-							else {
-								lEndQueueLoop = TRUE;
-
-								if (WSAGetLastError() == WSAEWOULDBLOCK) {
-									// nothing to do
-								}
-								else {
-									//	TRACE("Communication error A %d\n", WSAGetLastError());
-									//	Disconnect();
-								}
-							}
-						}
-					}
-
-					if (sock != INVALID_SOCKET) {
-						int lToSend = MR_NET_HEADER_LEN + lAnswer.mDataLen;
-
-						int lReturnValue;						  // send return value
-
-						if (mOutQueueLen > 0) {
-							lReturnValue = 0;
-						}
-						else {
-							lReturnValue = send(sock, ((const char*)&lAnswer), lToSend, 0);
-
-							//	cout <<lReturnValue << endl;
-
-								// TRACE( "Send %d %d %d\n", lToSend, lToSend-lSent, lReturnValue );
-
-							if ((lReturnValue == -1) && (WSAGetLastError() == WSAEWOULDBLOCK)) {
-								//	ASSERT(FALSE);
-								lReturnValue = 0;
-							}
-						}
-
-						if (lReturnValue < 0) {
-							//	TRACE("Communication error B %d\n", WSAGetLastError());
-							//	Disconnect();
-						}
-						else if (lReturnValue != lToSend) {
-							if ((lReturnValue > 0) || (MR_NET_REQUIRED == MR_NET_REQUIRED) || ((MR_NET_REQUIRED == MR_NET_TRY) && (mOutQueueLen < (MR_OUT_QUEUE_LEN / 4)))) {
-								lToSend -= lReturnValue;
-
-								if (lToSend > (MR_OUT_QUEUE_LEN - mOutQueueLen)) {
-									// no space left
-							//		TRACE("Output queue full\n");
-							//		Disconnect();
-							//		ASSERT(FALSE);
-								}
-								else {
-									// put the remaining part of the message in the queue
-									int lTail = (mOutQueueHead + mOutQueueLen) % MR_OUT_QUEUE_LEN;
-
-									int lFirstBlocSize = min(lToSend, MR_OUT_QUEUE_LEN - lTail);
-									int lSecondBlocSize = max(0, lToSend - lFirstBlocSize);
-
-									//	ASSERT(lFirstBlocSize > 0);
-
-									memcpy(mOutQueue + lTail, &lAnswer + lReturnValue, lFirstBlocSize);
-
-									if (lSecondBlocSize > 0) {
-										memcpy(mOutQueue, &lAnswer + lFirstBlocSize + lReturnValue, lSecondBlocSize);
-									}
-
-									mOutQueueLen += lToSend;
-								}
-							}
-						}
-					}
-
+					
 				
 				 cout << "responded " << endl;
 
@@ -519,14 +465,14 @@ void main()
 	// Cleanup winsock
 	WSACleanup();
 
-	system("pause");
+	//system("pause");
 }
 
 
 void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 {
 	// First try to send buffered data
-	if (sock!= INVALID_SOCKET) {
+	if (sock != INVALID_SOCKET) {
 		BOOL lEndQueueLoop = (mOutQueueLen == 0);
 
 		while (!lEndQueueLoop) {
@@ -559,8 +505,8 @@ void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 					// nothing to do
 				}
 				else {
-				//	TRACE("Communication error A %d\n", WSAGetLastError());
-					//Disconnect();
+					//	TRACE("Communication error A %d\n", WSAGetLastError());
+						//Disconnect();
 				}
 			}
 		}
@@ -580,14 +526,14 @@ void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 			// TRACE( "Send %d %d %d\n", lToSend, lToSend-lSent, lReturnValue );
 
 			if ((lReturnValue == -1) && (WSAGetLastError() == WSAEWOULDBLOCK)) {
-			//	ASSERT(FALSE);
+				//	ASSERT(FALSE);
 				lReturnValue = 0;
 			}
 		}
 
 		if (lReturnValue < 0) {
-		//	TRACE("Communication error B %d\n", WSAGetLastError());
-		//	Disconnect();
+			//	TRACE("Communication error B %d\n", WSAGetLastError());
+			//	Disconnect();
 		}
 		else if (lReturnValue != lToSend) {
 			if ((lReturnValue > 0) || (pReqLevel == MR_NET_REQUIRED) || ((pReqLevel == MR_NET_TRY) && (mOutQueueLen < (MR_OUT_QUEUE_LEN / 4)))) {
@@ -606,7 +552,7 @@ void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 					int lFirstBlocSize = min(lToSend, MR_OUT_QUEUE_LEN - lTail);
 					int lSecondBlocSize = max(0, lToSend - lFirstBlocSize);
 
-			//		ASSERT(lFirstBlocSize > 0);
+					//		ASSERT(lFirstBlocSize > 0);
 
 					memcpy(mOutQueue + lTail, pMessage + lReturnValue, lFirstBlocSize);
 
@@ -619,3 +565,4 @@ void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 			}
 		}
 	}
+}

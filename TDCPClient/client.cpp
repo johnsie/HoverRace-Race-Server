@@ -1,5 +1,5 @@
 
-//This is a testing tool for that emulates HoverRace connecting to a race
+//This is a testing tool for that emulates HoverRace conneci
 
 #include <iostream>
 #include <string>
@@ -89,6 +89,7 @@ public:
 
 
 
+
 #pragma comment (lib, "ws2_32.lib")
 
 using namespace std;
@@ -124,7 +125,7 @@ public:
 	// int MessageLen()const { return mDataLen+5; }
 };
 SOCKET sock;
-
+void SendData(const CentralisedNetClientMessageBuffer* pMessage, int pReqLevel);
 using namespace std;
 
 
@@ -372,7 +373,7 @@ using namespace std;
 			}
 
 
-			cout << "Recieved Message type" << mInputMessageBuffer.mMessageType << endl;
+ 			cout << "Recieved Message type" << mInputMessageBuffer.mMessageType << endl;
 
 
 			switch (mInputMessageBuffer.mMessageType)
@@ -406,7 +407,7 @@ using namespace std;
 
 			//		Todo. Get this function working
 
-			//		SendData(&lMessage, MR_NET_REQUIRED);
+			SendData(&lMessage, MR_NET_REQUIRED);
 
 
 					break;
