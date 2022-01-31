@@ -24,9 +24,13 @@ The client can connect to a standard race from a an HR client. I've been using t
 Todo in the Actual HR client (hosted in other repo):
 -------
 -Point Internet room in HR client to use centralisedsession
+
 -Point centralised sesssion to use centralisednetinterface
+
 -Force "broadcast" function to only send to the server instead of attempting to send to all other players (The server will handle broadcasting depending on the broadcast tyoes)
+
 -Change the UDP send functions to send to the central server (probably over TCP for now)
+
 -When a adds a new game to the IMR there needs to be a way to start the race server, and also start the race. This will only be useful if the all the other todos can be implented. Do we make the server able to handle multiple races at once? Worry about this later.
 
 Todo in the server project in this repo:
