@@ -71,7 +71,7 @@ public:
 
 #pragma comment (lib, "ws2_32.lib")
 
-
+void BroadCastData( const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel);
 
 
@@ -469,10 +469,31 @@ std::string lConnectionName ((const char*)(mInputMessageBuffer.mData + 4), mInpu
 }
 
 
-void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
+
+void BroadCastData( const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
+{
+	
+	// Send message to other clients, and definiately NOT the listening socket
+
+					for (int i = 0; i < master.fd_count; i++)
+					{
+						SOCKET outSock = master.fd_array[i];
+						if (outSock != listening && outSock != sock)
+						{
+					SendData(outSock, &pMessage, MR_NET_REQUIRED);
+					
+						}
+					}	
+	
+	
+}
+
+
+
+void SendData(SOCKET socktoSendTo, const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 {
 	// First try to send buffered data
-	if (sock != INVALID_SOCKET) {
+	if (socktoSendTo != INVALID_SOCKET) {
 		BOOL lEndQueueLoop = (mOutQueueLen == 0);
 
 		while (!lEndQueueLoop) {
@@ -487,7 +508,7 @@ void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 				lEndQueueLoop = TRUE;
 			}
 
-			int lReturnValue = send(sock, (const char*)(mOutQueue + mOutQueueHead), lToSend, 0);
+			int lReturnValue = send(socktoSendTo, (const char*)(mOutQueue + mOutQueueHead), lToSend, 0);
 
 			if (lReturnValue >= 0) {
 				mOutQueueLen -= lReturnValue;
@@ -521,7 +542,7 @@ void SendData(const CentralisedNetMessageBuffer* pMessage, int pReqLevel)
 			lReturnValue = 0;
 		}
 		else {
-			lReturnValue = send(sock, ((const char*)pMessage), lToSend, 0);
+			lReturnValue = send(socktoSendTo, ((const char*)pMessage), lToSend, 0);
 
 			// TRACE( "Send %d %d %d\n", lToSend, lToSend-lSent, lReturnValue );
 
