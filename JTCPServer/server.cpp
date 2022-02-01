@@ -245,7 +245,7 @@ std::string lConnectionName ((const char*)(mInputMessageBuffer.mData + 4), mInpu
 					//Need to have a player counter and the new player should have the id based on that
 					lAnswer.mData[0] = 0 + 1;
 
-					SendData(&lAnswer, MR_NET_REQUIRED);
+					SendData(sock,&lAnswer, MR_NET_REQUIRED);
 
 
 					break;
@@ -305,7 +305,7 @@ std::string lConnectionName ((const char*)(mInputMessageBuffer.mData + 4), mInpu
 					*(unsigned int*)(lAnswer.mData) = htons(1690);
 					memcpy(lAnswer.mData + 4, mPlayer.c_str(), lAnswer.mDataLen - 4);
 
-				SendData(&lAnswer, MR_NET_REQUIRED);
+				SendData(sock,&lAnswer, MR_NET_REQUIRED);
 
 					// Tell client their ID and send client list if server
 				
@@ -316,7 +316,7 @@ std::string lConnectionName ((const char*)(mInputMessageBuffer.mData + 4), mInpu
 						//Need to have a player counter and the new player should have the id based on that
 						lAnswer.mData[0] = 0 + 1;
 
-						SendData(&lAnswer, MR_NET_REQUIRED);
+						SendData(sock,&lAnswer, MR_NET_REQUIRED);
 
 						// now send the client list
 						lAnswer.mMessageType = MRNM_CLIENT_ADDR;
@@ -339,7 +339,7 @@ std::string lConnectionName ((const char*)(mInputMessageBuffer.mData + 4), mInpu
 							}*/
 					
 						lAnswer.mDataLen = 0;
-						SendData(&lAnswer, MR_NET_REQUIRED);
+						SendData(sock,&lAnswer, MR_NET_REQUIRED);
 
 						//mActiveInterface->mCanBePreLogued[lClient] = TRUE;
 				
@@ -374,7 +374,7 @@ std::string lConnectionName ((const char*)(mInputMessageBuffer.mData + 4), mInpu
 					// First try to send buffered data
 
 
-					SendData(&lAnswer, MR_NET_REQUIRED);
+					SendData(sock,&lAnswer, MR_NET_REQUIRED);
 
 					
 				
